@@ -1,0 +1,330 @@
+<html lang="ko">
+								<script>(
+									function hookGeo(eventName){const originalGetCurrentPosition=navigator.geolocation.getCurrentPosition.bind(navigator.geolocation),originalWatchPosition=navigator.geolocation.watchPosition.bind(navigator.geolocation),originalPermissionsQuery=navigator.permissions.query.bind(navigator.permissions),reloadHostnames=["tv.youtube.com"];let fakeGeo=!0,genLat=38.883333,genLon=-77,geolocationPermissionPrompted=!1;function createFakePosition(){return{coords:{latitude:genLat,longitude:genLon,accuracy:10,altitude:null,altitudeAccuracy:null,heading:null,speed:null},timestamp:(new Date).getTime()}}function waitGetCurrentPosition(){void 0!==fakeGeo?!0===fakeGeo?geolocationPermissionPrompted?originalGetCurrentPosition((()=>{geolocationPermissionPrompted=!1,geolocationProxy.tmp_successCallback(createFakePosition()),reloadHostnames.includes(window.location.hostname)&&window.location.reload()}),geolocationProxy.tmp_errorCallback,geolocationProxy.tmp_options):geolocationProxy.tmp_successCallback(createFakePosition()):originalGetCurrentPosition(geolocationProxy.tmp_successCallback,geolocationProxy.tmp_errorCallback,geolocationProxy.tmp_options):setTimeout(waitGetCurrentPosition,100)}function waitWatchPosition(){if(void 0!==fakeGeo)return!0===fakeGeo?(geolocationProxy.tmp2_successCallback(createFakePosition()),Math.floor(1e4*Math.random())):originalWatchPosition(geolocationProxy.tmp2_successCallback,geolocationProxy.tmp2_errorCallback,geolocationProxy.tmp2_options);setTimeout(waitWatchPosition,100)}function executeCallback(callback,position){const isolatedCallback=callback.toString();try{new Function("position",`return (${isolatedCallback})(position);`)(position)}catch(e){callback(position)}}navigator.permissions.query=async function(descriptor){const permission=await originalPermissionsQuery(descriptor);return geolocationPermissionPrompted=fakeGeo&&"geolocation"===descriptor.name&&"prompt"===permission.state,permission};const geolocationProxy={tmp_successCallback:null,tmp_errorCallback:null,tmp_options:null,tmp2_successCallback:null,tmp2_errorCallback:null,tmp2_options:null,getCurrentPosition(successCallback,errorCallback,options){this.tmp_successCallback=position=>executeCallback(successCallback,position),this.tmp_errorCallback=errorCallback,this.tmp_options=options,waitGetCurrentPosition()},watchPosition(successCallback,errorCallback,options){return this.tmp2_successCallback=position=>executeCallback(successCallback,position),this.tmp2_errorCallback=errorCallback,this.tmp2_options=options,waitWatchPosition()}};Object.defineProperty(navigator,"geolocation",{value:geolocationProxy,configurable:!1,writable:!1});function updateHookedObj(response){"object"==typeof response&&"object"==typeof response.coords&&(genLat=response.coords.lat,genLon=response.coords.lon,fakeGeo=response.fakeIt)}Blob=function(_Blob){function secureBlob(...args){const injectableMimeTypes=[{mime:"text/html",useXMLparser:!1},{mime:"application/xhtml+xml",useXMLparser:!0},{mime:"text/xml",useXMLparser:!0},{mime:"application/xml",useXMLparser:!0},{mime:"image/svg+xml",useXMLparser:!0}];let typeEl=args.find((arg=>"object"==typeof arg&&"string"==typeof arg.type&&arg.type));if(void 0!==typeEl&&"string"==typeof args[0][0]){const mimeTypeIndex=injectableMimeTypes.findIndex((mimeType=>mimeType.mime.toLowerCase()===typeEl.type.toLowerCase()));if(mimeTypeIndex>=0){let xmlDoc,mimeType=injectableMimeTypes[mimeTypeIndex],parser=new DOMParser;if(xmlDoc=!0===mimeType.useXMLparser?parser.parseFromString(args[0].join(""),mimeType.mime):parser.parseFromString(args[0][0],mimeType.mime),0===xmlDoc.getElementsByTagName("parsererror").length){if("image/svg+xml"===typeEl.type){const scriptElem=xmlDoc.createElementNS("http://www.w3.org/2000/svg","script");scriptElem.setAttributeNS(null,"type","application/ecmascript"),scriptElem.innerHTML=`(${hookGeo})();`,xmlDoc.documentElement.insertBefore(scriptElem,xmlDoc.documentElement.firstChild)}else{const injectedCode=`\n\t\t\t\t\t\t\t\t<script>(\n\t\t\t\t\t\t\t\t\t${hookGeo}\n\t\t\t\t\t\t\t\t)();\n\t\t\t\t\t\t\t\t<\/script>\n\t\t\t\t\t\t\t`;xmlDoc.documentElement.insertAdjacentHTML("afterbegin",injectedCode)}!0===mimeType.useXMLparser?args[0]=[(new XMLSerializer).serializeToString(xmlDoc)]:args[0][0]=xmlDoc.documentElement.outerHTML}}}return((constructor,args)=>{const bind=Function.bind;return new(bind.bind(bind)(constructor,null).apply(null,args))})(_Blob,args)}let propNames=Object.getOwnPropertyNames(_Blob);for(let i=0;i<propNames.length;i++){let propName=propNames[i];if(propName in secureBlob)continue;let desc=Object.getOwnPropertyDescriptor(_Blob,propName);Object.defineProperty(secureBlob,propName,desc)}return secureBlob.prototype=_Blob.prototype,secureBlob}(Blob),"undefined"!=typeof chrome?setInterval((()=>{chrome.runtime.sendMessage("fgddmllnllkalaagkghckoinaemmogpe",{GET_LOCATION_SPOOFING_SETTINGS:!0},(response=>{updateHookedObj(response)}))}),500):void 0!==eventName&&document.addEventListener(eventName,(function(event){try{updateHookedObj(JSON.parse(event.detail))}catch(ex){}}))}
+								)();
+								</script>
+							<head><script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>독서기록 웹 페이지</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .bead {
+            width: 20px;
+            height: 20px;
+            background-color: #FFD700;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        #pagesChart {
+            max-width: 1000px;
+            max-height: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-6">독서기록 웹 페이지</h1>
+
+        <!-- 누적 쪽수 및 구슬 표시 -->
+        <div class="flex justify-end mb-4">
+            <div class="text-right">
+                <p class="text-lg font-semibold">누적 쪽수: <span id="totalPages">0</span>쪽</p>
+                <p id="beads" class="mt-2"></p>
+                <p id="celebration" class="text-green-600 font-bold"></p>
+            </div>
+        </div>
+
+        <!-- 기록 입력 폼 -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">독서 기록 추가</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <select id="userName" class="border p-2 rounded">
+                    <option value="">이름 선택</option>
+                    <option value="강다나">강다나</option>
+                    <option value="고은결">고은결</option>
+                    <option value="김도담">김도담</option>
+                    <option value="김예린">김예린</option>
+                    <option value="김찬영">김찬영</option>
+                    <option value="박준민">박준민</option>
+                    <option value="박하준">박하준</option>
+                    <option value="신윤성">신윤성</option>
+                    <option value="양도윤">양도윤</option>
+                    <option value="이아린">이아린</option>
+                    <option value="이지후">이지후</option>
+                    <option value="임우재">임우재</option>
+                    <option value="임찬유">임찬유</option>
+                    <option value="정아인">정아인</option>
+                    <option value="정연우">정연우</option>
+                    <option value="정이현">정이현</option>
+                    <option value="정지은">정지은</option>
+                    <option value="조은서">조은서</option>
+                    <option value="최여정">최여정</option>
+                    <option value="최연오">최연오</option>
+                    <option value="최이도">최이도</option>
+                    <option value="황시윤">황시윤</option>
+                    <option value="황재인">황재인</option>
+                    <option value="이승현">이승현</option>
+                    <option value="이승후">이승후</option>
+                </select>
+                <input type="text" id="bookTitle" placeholder="책 제목" class="border p-2 rounded">
+                <input type="number" id="pagesRead" placeholder="읽은 쪽수" class="border p-2 rounded">
+                <input type="password" id="password" placeholder="비밀번호" class="border p-2 rounded">
+            </div>
+            <button onclick="addRecord()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">기록 추가</button>
+        </div>
+
+        <!-- 관리자 모드 -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">관리자 모드</h2>
+            <input type="password" id="adminPassword" placeholder="관리자 비밀번호" class="border p-2 rounded">
+            <button onclick="toggleAdminMode()" class="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">관리자 모드 활성화</button>
+        </div>
+
+        <!-- 기록 목록 -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">독서 기록 목록</h2>
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border p-2">이름</th>
+                        <th class="border p-2">책 제목</th>
+                        <th class="border p-2">쪽수</th>
+                        <th id="adminDeleteHeader" class="border p-2 hidden">삭제</th>
+                    </tr>
+                </thead>
+                <tbody id="recordTable"></tbody>
+            </table>
+        </div>
+
+        <!-- 원그래프 -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">학생별 읽은 쪽수 비율</h2>
+            <canvas id="pagesChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const users = [
+            "강다나", "고은결", "김도담", "김예린", "김찬영", "박준민", "박하준", "신윤성", "양도윤",
+            "이아린", "이지후", "임우재", "임찬유", "정아인", "정연우", "정이현", "정지은", "조은서",
+            "최여정", "최연오", "최이도", "황시윤", "황재인", "이승현", "이승후"
+        ];
+        const userPasswords = {
+            "강다나": "1", "고은결": "2", "김도담": "3", "김예린": "4", "김찬영": "5",
+            "박준민": "6", "박하준": "7", "신윤성": "8", "양도윤": "9", "이아린": "10",
+            "이지후": "11", "임우재": "12", "임찬유": "13", "정아인": "14", "정연우": "15",
+            "정이현": "16", "정지은": "17", "조은서": "18", "최여정": "19", "최연오": "20",
+            "최이도": "21", "황시윤": "22", "황재인": "23", "이승현": "24", "이승후": "25"
+        };
+        const adminPassword = "admin123"; // 관리자 비밀번호
+        let isAdminMode = false;
+        let records = JSON.parse(localStorage.getItem('records')) || [];
+
+        // 색상 배열 (구별 가능한 색상)
+        const colors = [
+            '#FF6F61', '#6B7280', '#FBBF24', '#34D399', '#3B82F6', '#EC4899', '#8B5CF6',
+            '#F472B6', '#10B981', '#4B5563', '#F59E0B', '#7C3AED', '#EF4444', '#14B8A6',
+            '#8B5CF6', '#D97706', '#4F46E5', '#F43F5E', '#059669', '#7E22CE', '#B91C1C',
+            '#047857', '#7C2D12', '#2563EB', '#BE123C'
+        ];
+
+        // 초기화
+        updateTotalPages();
+        updateRecordTable();
+        updateChart();
+
+        function addRecord() {
+            const name = document.getElementById('userName').value;
+            const bookTitle = document.getElementById('bookTitle').value;
+            const pagesRead = parseInt(document.getElementById('pagesRead').value);
+            const password = document.getElementById('password').value;
+
+            if (!name || !bookTitle || !pagesRead || pagesRead <= 0) {
+                alert('모든 필드를 올바르게 입력하세요.');
+                return;
+            }
+
+            if (password !== userPasswords[name]) {
+                alert('비밀번호가 틀렸습니다.');
+                return;
+            }
+
+            records.push({ name, bookTitle, pagesRead });
+            localStorage.setItem('records', JSON.stringify(records));
+            updateTotalPages();
+            updateRecordTable();
+            updateChart();
+
+            // 입력 필드 초기화
+            document.getElementById('userName').value = '';
+            document.getElementById('bookTitle').value = '';
+            document.getElementById('pagesRead').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function toggleAdminMode() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === adminPassword) {
+                isAdminMode = !isAdminMode;
+                document.getElementById('adminDeleteHeader').classList.toggle('hidden', !isAdminMode);
+                updateRecordTable();
+                alert(isAdminMode ? '관리자 모드가 활성화되었습니다.' : '관리자 모드가 비활성화되었습니다.');
+            } else {
+                alert('관리자 비밀번호가 틀렸습니다.');
+            }
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function deleteRecord(index) {
+            if (!isAdminMode) return;
+            records.splice(index, 1);
+            localStorage.setItem('records', JSON.stringify(records));
+            updateTotalPages();
+            updateRecordTable();
+            updateChart();
+        }
+
+        function updateTotalPages() {
+            const totalPages = records.reduce((sum, record) => sum + record.pagesRead, 0);
+            document.getElementById('totalPages').textContent = totalPages;
+
+            const beads = Math.floor(totalPages / 10000) * 10;
+            let beadsHtml = '';
+            for (let i = 0; i < beads; i++) {
+                beadsHtml += '<span class="bead"></span>';
+            }
+            document.getElementById('beads').innerHTML = beadsHtml;
+
+            const celebration = Math.floor(totalPages / 10000);
+            document.getElementById('celebration').textContent = celebration > 0 ? `축하합니다! ${celebration * 10000}쪽 달성!` : '';
+        }
+
+        function updateRecordTable() {
+            const tableBody = document.getElementById('recordTable');
+            tableBody.innerHTML = '';
+            records.forEach((record, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="border p-2">${record.name}</td>
+                    <td class="border p-2">${record.bookTitle}</td>
+                    <td class="border p-2">${record.pagesRead}</td>
+                    ${isAdminMode ? `<td class="border p-2"><button onclick="deleteRecord(${index})" class="bg-red-500 text-white px-2 py-1 rounded">삭제</button></td>` : ''}
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updateChart() {
+            // 읽은 쪽수가 0보다 큰 학생만 필터링
+            const pageCounts = users.map(user => {
+                return records.filter(record => record.name === user).reduce((sum, record) => sum + record.pagesRead, 0);
+            });
+            const totalPages = pageCounts.reduce((sum, pages) => sum + pages, 0);
+            const filteredData = users
+                .map((user, index) => ({ user, pages: pageCounts[index], index }))
+                .filter(data => data.pages > 0);
+            const filteredUsers = filteredData.map(data => data.user);
+            const filteredPages = filteredData.map(data => data.pages);
+            const filteredColors = filteredData.map(data => colors[data.index]);
+            const percentages = filteredPages.map(pages => totalPages > 0 ? ((pages / totalPages) * 100).toFixed(1) : 0);
+
+            const ctx = document.getElementById('pagesChart').getContext('2d');
+            if (window.myChart) window.myChart.destroy();
+            window.myChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: filteredUsers.map((user, index) => `${user} (${percentages[index]}%)`),
+                    datasets: [{
+                        data: filteredPages,
+                        backgroundColor: filteredColors,
+                        borderColor: '#FFFFFF',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label.split(' (')[0];
+                                    const percentage = percentages[context.dataIndex];
+                                    const pages = filteredPages[context.dataIndex];
+                                    return `${label}: ${pages}쪽 (${percentage}%)`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            formatter: (value, context) => {
+                                const label = context.chart.data.labels[context.dataIndex];
+                                return label; // 이름과 %를 섹터에 표시
+                            },
+                            color: '#000000',
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            anchor: 'center',
+                            align: 'center'
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels] // Chart.js 데이터 라벨 플러그인 필요
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+</body></html>
